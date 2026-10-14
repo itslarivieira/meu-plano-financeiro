@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meu Plano Financeiro</title>
+    <style>
+        :root {
+            --primary: #820ad1;
+            --primary-light: #f3e8ff;
+            --success: #00c853;
+            --success-light: #e8f8ec;
+            --danger: #ff3d00;
+            --danger-light: #ffebee;
+            --bg: #f4f5f7;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-secondary: #757575;
+            --border: #e0e0e0;
+            --radius: 20px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] {
+            --primary: #a855f7;
+            --primary-light: #2e1065;
+            --success: #4ade80;
+            --success-light: #052e16;
+            --danger: #f87171;
+            --danger-light: #450a0a;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 90px;
+        }
+
+        .page {
+            display: none;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeIn 0.2s ease;
+        }
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            background: var(--surface);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn-voltar, .btn-theme, .btn-pdf {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Títulos sem limite restrito para evitar 3 pontinhos indesejados no celular */
+        h1, h2 { 
+            font-size: 1.15rem; 
+            font-weight: 700; 
+            white-space: normal; 
+            word-break: break-word;
+        }
+
+        /* Página 1 - Seleção de Mês */
+        .month-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .month-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            padding: 18px 20px;
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+        .month-card:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .month-card-title { font-weight: 700; font-size: 1.05rem; }
+        .month-card-sub { font-size: 0.8rem; color: var(--text-secondary); }
+
+        /* Vitrine Cautelosa */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .shortcut-btn {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .shortcut-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .shortcut-value { font-size: 0.85rem; font-weight: 700; color: var(--success); white-space: nowrap; }
+
+        /* Dashboard Resumo */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+        }
+        .stat-title {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .stat-main-value { font-size: 1.05rem; font-weight: 700; }
+        .stat-sub { font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; }
+
+        /* Cards de Categoria */
+        .category-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .category-title { font-size: 0.95rem; font-weight: 700; }
+        .category-total { font-size: 0.9rem; font-weight: 600; color: var(--primary); }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 6px;
+            border-bottom: 1px solid var(--bg);
+            gap: 6px;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .item-row.pago-row {
+            background: rgba(0, 200, 83, 0.08);
+            opacity: 0.8;
+        }
+        .item-row.vencido-row {
+            background: rgba(255, 61, 0, 0.08);
+        }
+        .item-row:last-child { border-bottom: none; }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .checkbox-custom {
+            width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; flex-shrink: 0;
+        }
+        .item-text { display: flex; flex-direction: column; overflow: hidden; }
+        .item-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-detail { font-size: 0.7rem; color: var(--text-secondary); }
+        .item-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .item-price { font-size: 0.85rem; font-weight: 600; }
+        .data-pagamento-input {
+            font-size: 0.7rem;
+            padding: 3px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text);
+            width: 82px;
+            outline: none;
+        }
+        .btn-action { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 0.85rem; padding: 2px; }
+        .btn-action:hover { color: var(--primary); }
+        .btn-action.delete:hover { color: var(--danger); }
+
+        /* Menu Inferior Fixo */
+        nav.bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--surface); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000;
+        }
+        .nav-item {
+            background: none; border: none; display: flex; flex-direction: column;
+            align-items: center; color: var(--text-secondary); font-size: 0.75rem; gap: 4px; cursor: pointer;
+        }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+
+        .fab {
+            position: fixed;
+            bottom: 75px; right: 20px;
+            background: var(--primary); color: #fff;
+            width: 54px; height: 54px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 20px rgba(130, 10, 209, 0.4);
+            border: none; cursor: pointer; z-index: 999; font-size: 24px;
+        }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 2000;
+            align-items: flex-end; justify-content: center;
+        }
+        .modal.open { display: flex; }
+        .modal-content {
+            background: var(--surface); width: 100%; max-width: 600px;
+            border-radius: 28px 28px 0 0; padding: 24px 24px 40px; max-height: 90vh; overflow-y: auto;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.85rem; margin-bottom: 6px; font-weight: 600; color: var(--text-secondary); }
+        .form-input, .form-select {
+            width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--bg); color: var(--text); font-size: 1rem; outline: none;
+        }
+        .btn-primary {
+            width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px;
+        }
+        .radio-group { display: flex; gap: 12px; }
+        .radio-card {
+            flex: 1; padding: 12px; border: 1.5px solid var(--border); border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; background: var(--bg); color: var(--text-secondary);
+        }
+        .radio-card.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        @media print {
+            body { background: #fff; color: #000; padding: 0; }
+            .fab, nav.bottom-nav, .btn-voltar, button { display: none !important; }
+            .page { display: block !important; padding: 0; }
+            .category-card, .stat-card, header { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PÁGINA 1: ESCOLHA DO MÊS -->
+    <div id="pageMeses" class="page active">
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 1.3rem; margin-bottom: 2px;">Planejamento Financeiro</h1>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Escolha o mês:</p>
+            </div>
+            <button class="btn-theme" onclick="alternarTema()">🌙/☀️</button>
+        </div>
+        <div class="month-grid" id="monthGridContainer"></div>
+        <button class="btn-primary" onclick="adicionarNovoMes()" style="margin-top: 20px; background: var(--surface); color: var(--primary); border: 2px dashed var(--primary);">+ Adicionar Próximo Mês</button>
+    </div>
+
+    <!-- PÁGINA 2: MENU PRINCIPAL DO MÊS -->
+    <div id="pageMenu" class="page">
+        <header style="margin: -20px -20px 20px -20px;">
+            <button class="btn-voltar" onclick="irParaPaginaMeses()">← Meses</button>
+            <h2 id="tituloMenuMes">Novembro 26</h2>
+            <div class="header-actions">
+                <button class="btn-pdf" onclick="baixarPdfMes()">📄 PDF</button>
+                <button class="btn-theme" onclick="alternarTema()">🌙</button>
+            </div>
+        </header>
+
+        <!-- Vitrine Dinâmica de Cartões e VR -->
+        <div class="shortcuts-grid" id="shortcutsGrid" style="margin-top: 16px;"></div>
+
+        <!-- Entradas e Saídas -->
+        <div class="dashboard-grid">
+            <div class="stat-card" onclick="abrirDetalhesEntradas()">
+                <div class="stat-title">Entradas & Saídas 🔍</div>
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--success); font-weight: 600;" id="lblEntrada">+ R$ 0,00</div>
+                    <div class="stat-main-value" id="lblSaida" style="color: var(--danger); margin-top: 2px;">R$ 0,00</div>
+                </div>
+                <div class="stat-sub" style="margin-top: 4px;">Sobra: <strong id="lblSobra" style="color: var(--primary);">R$ 0,00</strong></div>
+            </div>
+            <div class="stat-card" style="cursor: default;">
+                <div class="stat-title">Resumo do Mês</div>
+                <div class="stat-main-value" id="lblTotalComprometido" style="font-size: 0.95rem;">R$ 0,00</div>
+                <div class="stat-sub" style="margin-top: 4px;">Comprometimento</div>
+            </div>
+        </div>
+
+        <!-- 1. Gastos Fixos -->
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-title">⚡ Gastos Fixos</div>
+                <span class="category-total" id="totalFixos">R$ 0,00</span>
+            </div>
+            <div id="listFixos"></div>
+        </div>
+
+        <!-- 2. Compromissos com Terceiros -->
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-title">🤝 Compromissos com Terceiros</div>
+                <span class="category-total" id="totalTerceiros">R$ 0,00</span>
+            </div>
+            <div id="listTerceiros"></div>
+        </div>
+
+        <!-- 3. Faturas de Cartão -->
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-title">💳 Faturas de Cartão</div>
+                <span class="category-total" id="totalCartoesMenu">R$ 0,00</span>
+            </div>
+            <div id="listCartoesMenu"></div>
+            <button class="btn-primary" onclick="abrirModalAddCartao()" style="margin-top: 8px; font-size: 0.85rem; padding: 10px;">+ Adicionar Cartão de Crédito</button>
+        </div>
+
+        <!-- 4. Gastos Variáveis -->
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-title">🛍️ Gastos Variáveis</div>
+                <span class="category-total" id="totalVariaveis">R$ 0,00</span>
+            </div>
+            <div id="listVariaveis"></div>
+        </div>
+    </div>
+
+    <!-- PÁGINA 3: TELA DETALHADA DO CARTÃO -->
+    <div id="pageCartaoDetalhe" class="page">
+        <header style="margin: -20px -20px 20px -20px;">
+            <button class="btn-voltar" onclick="voltarParaMenu()">← Menu</button>
+            <h2 id="tituloCartaoDetalhe">Cartão</h2>
+            <div style="width: 50px;"></div>
+        </header>
+
+        <div class="dashboard-grid" style="margin-bottom: 20px; margin-top: 16px;">
+            <div class="stat-card" onclick="editarLimiteCartao()">
+                <div class="stat-title">Limite Total ✏️</div>
+                <div class="stat-main-value" id="detalheLimiteTotal">R$ 0,00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Disponível</div>
+                <div class="stat-main-value" id="detalheLimiteDisp" style="color: var(--success);">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="category-card" style="padding: 12px 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+                <span>Fechamento: <strong id="lblFechamento">Dia 01</strong></span>
+                <span>Vencimento: <strong id="lblVencimentoFat">Dia 10</strong></span>
+                <button class="btn-action" onclick="editarDatasFatura()">✏️ Ajustar</button>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-title" id="tituloExtratoCartao">Extrato e Compras</div>
+                <span class="category-total" id="detalheTotalFatura">R$ 0,00</span>
+            </div>
+            <div id="listExtratoCartao"></div>
+        </div>
+
+        <button class="btn-primary" onclick="abrirModalCompraCartao()" style="margin-top: 10px;">+ Adicionar Compra neste Cartão</button>
+    </div>
+
+    <!-- PÁGINA 4: TELA DETALHADA DO VR -->
+    <div id="pageVrDetalhe" class="page">
+        <header style="margin: -20px -20px 20px -20px;">
+            <button class="btn-voltar" onclick="voltarParaMenu()">← Menu</button>
+            <h2>Vale-Refeição (Caso à parte)</h2>
+            <div style="width: 50px;"></div>
+        </header>
+
+        <div class="dashboard-grid" style="margin-bottom: 20px; margin-top: 16px;">
+            <div class="stat-card" onclick="editarVrTotal()">
+                <div class="stat-title">Total VR ✏️</div>
+                <div class="stat-main-value" id="vrDetalheTotal">R$ 0,00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Disponível</div>
+                <div class="stat-main-value" id="vrDetalheDisp" style="color: var(--success);">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-title">Controle de Gastos no VR</div>
+                <span class="category-total" id="vrDetalheGasto">R$ 0,00</span>
+            </div>
+            <div id="listExtratoVr"></div>
+        </div>
+
+        <button class="btn-primary" onclick="abrirModalGastoVr()" style="margin-top: 10px;">+ Adicionar Gasto no VR</button>
+    </div>
+
+    <!-- PÁGINA 5: TELA DE INVESTIMENTOS -->
+    <div id="pageInvestimentos" class="page">
+        <header style="margin: -20px -20px 20px -20px;">
+            <button class="btn-voltar" onclick="voltarParaMenu()">← Menu</button>
+            <h2>Meus Investimentos</h2>
+            <div style="width: 50px;"></div>
+        </header>
+
+        <div class="category-card" style="margin-top: 16px;">
+            <div class="category-header">
+                <div class="category-title">Valor Total Investido</div>
+                <span class="category-total" id="totalInvestido">R$ 0,00</span>
+            </div>
+            <div id="listInvestimentos"></div>
+        </div>
+
+        <button class="btn-primary" onclick="abrirModalInvestimento()" style="margin-top: 10px;">+ Adicionar Investimento / Caixinha</button>
+    </div>
+
+    <!-- Menu Inferior Fixo -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="voltarParaMenu()">🏠 Menu Mês</button>
+        <button class="nav-item" onclick="mudarPagina('pageInvestimentos'); renderInvestimentos();">💰 Investimentos</button>
+    </nav>
+
+    <!-- Botão Adicionar Geral -->
+    <button class="fab" onclick="openModalGeral()">+</button>
+
+    <!-- Modais -->
+    <div class="modal" id="modalGeral">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Adicionar Novo Gasto</h3>
+            <div class="form-group"><label class="form-label">Descrição</label><input type="text" id="gDesc" class="form-input" placeholder="Ex: Faculdade, Uber..."></div>
+            <div class="form-group"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" id="gValor" class="form-input" placeholder="0,00"></div>
+            <div class="form-group"><label class="form-label">Vencimento</label><input type="date" id="gVenc" class="form-input"></div>
+            <div class="form-group" id="blocoValidadeFixo" style="display:none;">
+                <label class="form-label">Válido até qual mês?</label>
+                <select id="gFimFixo" class="form-select">
+                    <option value="indefinido">Repetir indefinidamente</option>
+                    <option value="2026-11">Novembro 26</option>
+                    <option value="2026-12">Dezembro 26</option>
+                    <option value="2027-01">Janeiro 27</option>
+                    <option value="2027-02">Fevereiro 27</option>
+                    <option value="2027-03">Março 27</option>
+                    <option value="2027-04">Abril 27</option>
+                    <option value="2027-05">Maio 27</option>
+                    <option value="2027-06">Junho 27</option>
+                    <option value="2027-07">Julho 27</option>
+                    <option value="2027-08">Agosto 27</option>
+                    <option value="2027-09">Setembro 27</option>
+                    <option value="2027-10">Outubro 27</option>
+                    <option value="2027-11">Novembro 27</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select id="gCat" class="form-select" onchange="verificarCatFixo(this.value)">
+                    <option value="fixos">Gastos Fixos</option>
+                    <option value="terceiros">Compromissos com Terceiros</option>
+                    <option value="variaveis">Gastos Variáveis</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="salvarGastoGeral()">Salvar</button>
+            <button onclick="closeModalGeral()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalAddCartao">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Adicionar Cartão de Crédito</h3>
+            <div class="form-group"><label class="form-label">Nome do Cartão (Ex: Nubank, Itaú)</label><input type="text" id="ncNome" class="form-input" placeholder="Nome"></div>
+            <div class="form-group"><label class="form-label">Limite Total (R$)</label><input type="number" step="0.01" id="ncLimite" class="form-input" placeholder="0,00"></div>
+            <div class="form-group"><label class="form-label">Dia do Fechamento (Ex: 20)</label><input type="text" id="ncFech" class="form-input" placeholder="20"></div>
+            <div class="form-group"><label class="form-label">Dia do Vencimento (Ex: 27)</label><input type="text" id="ncVenc" class="form-input" placeholder="27"></div>
+            <button class="btn-primary" onclick="salvarNovoCartao()">Criar Cartão</button>
+            <button onclick="closeModalAddCartao()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEntradas">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Gerenciar Entradas</h3>
+            <div id="listEntradasDet" style="margin-bottom: 16px;"></div>
+            <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Adicionar Nova Entrada</h4>
+            <div class="form-group"><label class="form-label">Descrição (Ex: Salário, Venda VR)</label><input type="text" id="entDesc" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" id="entValor" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Data</label><input type="date" id="entData" class="form-input"></div>
+            <button class="btn-primary" onclick="adicionarEntrada()">Adicionar Entrada</button>
+            <button onclick="closeModalEntradas()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Fechar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalCartao">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Nova Compra no Cartão</h3>
+            <div class="form-group"><label class="form-label">Descrição</label><input type="text" id="cDesc" class="form-input" placeholder="Ex: Farmácia, Shopee..."></div>
+            <div class="form-group"><label class="form-label">Valor Total (R$)</label><input type="number" step="0.01" id="cValor" class="form-input" placeholder="0,00"></div>
+            <div class="form-group"><label class="form-label">Data da Compra</label><input type="date" id="cData" class="form-input"></div>
+            <div class="form-group">
+                <label class="form-label">É parcelado?</label>
+                <div class="radio-group">
+                    <div class="radio-card selected" id="cOptNao" onclick="setCartaoParcelado(false)">Não (À vista)</div>
+                    <div class="radio-card" id="cOptSim" onclick="setCartaoParcelado(true)">Sim (Parcelado)</div>
+                </div>
+            </div>
+            <div class="form-group" id="cBlocoParcelas" style="display: none;"><label class="form-label">Em quantas vezes?</label><input type="number" id="cParcelas" class="form-input" value="2" min="2" max="24"></div>
+            <button class="btn-primary" onclick="salvarCompraCartaoModal()">Adicionar ao Cartão</button>
+            <button onclick="closeModalCartao()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalVr">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Adicionar Gasto no VR</h3>
+            <div class="form-group"><label class="form-label">Onde gastou?</label><input type="text" id="vrDesc" class="form-input" placeholder="Ex: Supermercado..."></div>
+            <div class="form-group"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" id="vrValor" class="form-input" placeholder="0,00"></div>
+            <button class="btn-primary" onclick="salvarGastoVrModal()">Adicionar ao VR</button>
+            <button onclick="closeModalVr()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalInvestimento">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Nova Caixinha / Investimento</h3>
+            <div class="form-group"><label class="form-label">Nome</label><input type="text" id="invNome" class="form-input" placeholder="Ex: Reserva"></div>
+            <div class="form-group"><label class="form-label">Valor Aplicado (R$)</label><input type="number" step="0.01" id="invValor" class="form-input" placeholder="0,00"></div>
+            <div class="form-group"><label class="form-label">Tipo</label><input type="text" id="invTipo" class="form-input" placeholder="Ex: CDB"></div>
+            <div class="form-group"><label class="form-label">Rendimento</label><input type="text" id="invRendimento" class="form-input" placeholder="Ex: 100% CDI"></div>
+            <div class="form-group"><label class="form-label">Resgate</label><input type="date" id="invResgate" class="form-input"></div>
+            <button class="btn-primary" onclick="salvarInvestimento()">Salvar</button>
+            <button onclick="closeModalInvestimento()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEditar">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">Editar Gasto</h3>
+            <div class="form-group"><label class="form-label">Descrição</label><input type="text" id="eDesc" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" id="eValor" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Vencimento</label><input type="date" id="eVenc" class="form-input"></div>
+            <button class="btn-primary" onclick="salvarEdicaoGeral()">Atualizar</button>
+            <button onclick="closeModalEditar()" style="width:100%; background:none; border:none; color:var(--text-secondary); padding:14px; margin-top:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        let mesAtual = "2026-11";
+        let cartaoAtivo = "";
+        let cartaoParceladoFlag = false;
+        let editandoCat = null;
+        let editandoIndex = null;
+
+        let limitesCartoes = JSON.parse(localStorage.getItem('larissa_limites_v12')) || {};
+        const investimentos = JSON.parse(localStorage.getItem('larissa_investimentos_v12')) || [];
+
+        function gerarMesesIniciais() {
+            let dadosSalvos = localStorage.getItem('larissa_dados_v12');
+            if(dadosSalvos) return JSON.parse(dadosSalvos);
+
+            let meses = {};
+            let nomesMeses = [
+                "Novembro 26", "Dezembro 26", "Janeiro 27", "Fevereiro 27", 
+                "Março 27", "Abril 27", "Maio 27", "Junho 27", 
+                "Julho 27", "Agosto 27", "Setembro 27", "Outubro 27", "Novembro 27"
+            ];
+            let chaves = [
+                "2026-11", "2026-12", "2027-01", "2027-02", 
+                "2027-03", "2027-04", "2027-05", "2027-06", 
+                "2027-07", "2027-08", "2027-09", "2027-10", "2027-11"
+            ];
+
+            chaves.forEach((chave, idx) => {
+                meses[chave] = {
+                    nome: nomesMeses[idx],
+                    entradasDetalhadas: [],
+                    vrTotal: 0.00,
+                    fixos: [],
+                    terceiros: [],
+                    cartoes: [],
+                    vrGastos: [],
+                    variaveis: []
+                };
+            });
+            return meses;
+        }
+
+        let mesesData = gerarMesesIniciais();
+
+        function init() { 
+            let temaSalvo = localStorage.getItem('larissa_tema') || 'light';
+            document.documentElement.setAttribute('data-theme', temaSalvo);
+            renderMonthGrid(); 
+        }
+
+        function alternarTema() {
+            let atual = document.documentElement.getAttribute('data-theme');
+            let novo = atual === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', novo);
+            localStorage.setItem('larissa_tema', novo);
+        }
+
+        function mudarPagina(idPagina) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(idPagina).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function irParaPaginaMeses() { renderMonthGrid(); mudarPagina('pageMeses'); }
+        function voltarParaMenu() { renderMenuMes(); mudarPagina('pageMenu'); }
+
+        function renderMonthGrid() {
+            const container = document.getElementById('monthGridContainer');
+            container.innerHTML = '';
+            for (const [key, data] of Object.entries(mesesData)) {
+                let totalEntradas = (data.entradasDetalhadas || []).reduce((a,b)=>a+b.valor, 0);
+                let totalGasto = calcularTotalMes(data);
+                let sobra = totalEntradas - totalGasto;
+
+                const div = document.createElement('div');
+                div.className = 'month-card';
+                div.onclick = () => { mesAtual = key; renderMenuMes(); mudarPagina('pageMenu'); };
+                div.innerHTML = `
+                    <div>
+                        <div class="month-card-title">${data.nome}</div>
+                        <div class="month-card-sub">Entradas: ${formatMoney(totalEntradas)}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 700; color: var(--primary);">${formatMoney(sobra)} livres</div>
+                        <div class="month-card-sub">Toque para abrir</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function adicionarNovoMes() {
+            let chaves = Object.keys(mesesData);
+            let ultimaChave = chaves[chaves.length - 1];
+            let [ano, mes] = ultimaChave.split('-').map(Number);
+
+            mes++;
+            if(mes > 12) { mes = 1; ano++; }
+
+            let novaChave = `${ano}-${String(mes).padStart(2, '0')}`;
+            let nomesMesesRes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            let nomeNovoMes = `${nomesMesesRes[mes - 1]} ${String(ano).slice(2)}`;
+
+            if(mesesData[novaChave]) { alert("Este mês já existe!"); return; }
+
+            let fixosAtuais = [];
+            let cartoesModelo = [];
+
+            if(mesesData[mesAtual]) {
+                if(mesesData[mesAtual].fixos) {
+                    mesesData[mesAtual].fixos.forEach(f => {
+                        if(!f.fimValidade || f.fimValidade >= novaChave) {
+                            let clone = JSON.parse(JSON.stringify(f));
+                            clone.pago = false; clone.dataPagto = "";
+                            fixosAtuais.push(clone);
+                        }
+                    });
+                }
+                if(mesesData[mesAtual].cartoes) {
+                    mesesData[mesAtual].cartoes.forEach(c => {
+                        cartoesModelo.push({ nome: c.nome, valor: 0.00, fechamento: c.fechamento, vencimento: c.vencimento, pago: false, dataPagto: "", parcelas: [] });
+                    });
+                }
+            }
+
+            mesesData[novaChave] = {
+                nome: nomeNovoMes,
+                entradasDetalhadas: [],
+                vrTotal: 0.00,
+                fixos: fixosAtuais,
+                terceiros: [],
+                cartoes: cartoesModelo,
+                vrGastos: [],
+                variaveis: []
+            };
+
+            salvarDados(); renderMonthGrid();
+        }
+
+        function calcularTotalMes(data) {
+            let t = 0;
+            ['fixos', 'terceiros', 'variaveis'].forEach(cat => { if(data[cat]) data[cat].forEach(i => t += i.valor); });
+            if(data.cartoes) data.cartoes.forEach(c => t += c.valor);
+            return t;
+        }
+
+        function renderMenuMes() {
+            const dados = mesesData[mesAtual];
+            document.getElementById('tituloMenuMes').innerText = dados.nome;
+
+            let tFixos = renderListaItens('listFixos', dados.fixos, 'fixos');
+            let tTerceiros = renderListaItens('listTerceiros', dados.terceiros, 'terceiros');
+            let tCartoes = renderListaCartoesMenu(dados.cartoes);
+            let tVariaveis = renderListaItens('listVariaveis', dados.variaveis, 'variaveis');
+
+            document.getElementById('totalFixos').innerText = formatMoney(tFixos);
+            document.getElementById('totalTerceiros').innerText = formatMoney(tTerceiros);
+            document.getElementById('totalCartoesMenu').innerText = formatMoney(tCartoes);
+            document.getElementById('totalVariaveis').innerText = formatMoney(tVariaveis);
+
+            let totalEntradas = (dados.entradasDetalhadas || []).reduce((a,b)=>a+b.valor, 0);
+            let totalSaidas = tFixos + tTerceiros + tCartoes + tVariaveis;
+            let sobra = totalEntradas - totalSaidas;
+
+            document.getElementById('lblEntrada').innerText = "+ " + formatMoney(totalEntradas);
+            document.getElementById('lblSaida').innerText = formatMoney(totalSaidas);
+            document.getElementById('lblSobra').innerText = formatMoney(sobra);
+            document.getElementById('lblTotalComprometido').innerText = formatMoney(totalSaidas);
+
+            renderVitrineCartoesEVr(dados);
+        }
+
+        function renderVitrineCartoesEVr(dados) {
+            const grid = document.getElementById('shortcutsGrid');
+            grid.innerHTML = '';
+
+            (dados.cartoes || []).forEach(c => {
+                let limTot = limitesCartoes[c.nome] || 0;
+                let disp = limTot - c.valor;
+                grid.innerHTML += `
+                    <div class="shortcut-btn" onclick="abrirTelaCartao('${c.nome}')">
+                        <div class="shortcut-title">${c.nome} (Disp)</div>
+                        <div class="shortcut-value" style="color: ${disp < 0 ? 'var(--danger)' : 'var(--success)'};">${formatMoney(disp)}</div>
+                    </div>
+                `;
+            });
+
+            let vrGasto = (dados.vrGastos || []).reduce((a,b)=>a+b.valor, 0);
+            grid.innerHTML += `
+                <div class="shortcut-btn" onclick="abrirTelaVr()">
+                    <div class="shortcut-title">Vale-Refeição</div>
+                    <div class="shortcut-value" style="color:var(--primary);">${formatMoney(vrGasto)}</div>
+                </div>
+            `;
+        }
+
+        function renderListaItens(elementId, itens, catKey) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            let total = 0;
+            if(!itens || itens.length === 0) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-secondary); text-align:center; padding:8px;">Nenhum item registrado.</div>`;
+                return 0;
+            }
+
+            let hoje = new Date().toISOString().split('T')[0];
+
+            itens.forEach((item, index) => {
+                total += item.valor;
+                let vencido = !item.pago && item.vencimento && item.vencimento < hoje;
+                let textoVencido = vencido ? `<span style="color:var(--danger); font-size:0.68rem; display:block;">⚠️ Vencido desde ${formatarDataExibicao(item.vencimento)}</span>` : `Venc: ${formatarDataExibicao(item.vencimento)}`;
+
+                const row = document.createElement('div');
+                row.className = `item-row ${item.pago ? 'pago-row' : ''} ${vencido ? 'vencido-row' : ''}`;
+                row.innerHTML = `
+                    <div class="item-info">
+                        <input type="checkbox" class="checkbox-custom" ${item.pago ? 'checked' : ''} onchange="toggleCheck('${catKey}', ${index})">
+                        <div class="item-text">
+                            <span class="item-name" style="${item.pago ? 'text-decoration: line-through;' : ''}">${item.nome}</span>
+                            <span class="item-detail">${textoVencido}</span>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-price">${formatMoney(item.valor)}</span>
+                        <input type="date" class="data-pagamento-input" value="${item.dataPagto || ''}" onchange="atualizarDataPagto('${catKey}', ${index}, this.value)">
+                        <button class="btn-action" onclick="abrirEditarGeral('${catKey}', ${index})">✏️</button>
+                        <button class="btn-action delete" onclick="excluirGeral('${catKey}', ${index})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            return total;
+        }
+
+        function renderListaCartoesMenu(cartoes) {
+            const container = document.getElementById('listCartoesMenu');
+            container.innerHTML = '';
+            let total = 0;
+            if(!cartoes || cartoes.length === 0) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-secondary); text-align:center; padding:8px;">Nenhum cartão cadastrado.</div>`;
+                return 0;
+            }
+
+            let hoje = new Date().toISOString().split('T')[0];
+
+            cartoes.forEach((cartao, cIdx) => {
+                total += cartao.valor;
+                let vencido = !cartao.pago && cartao.vencimento && cartao.vencimento < hoje;
+
+                const row = document.createElement('div');
+                row.className = `item-row ${cartao.pago ? 'pago-row' : ''} ${vencido ? 'vencido-row' : ''}`;
+                row.innerHTML = `
+                    <div class="item-info">
+                        <input type="checkbox" class="checkbox-custom" ${cartao.pago ? 'checked' : ''} onchange="toggleCheckCartaoMenu(${cIdx})">
+                        <div class="item-text" onclick="abrirTelaCartao('${cartao.nome}')" style="cursor:pointer;">
+                            <span class="item-name" style="${cartao.pago ? 'text-decoration: line-through;' : ''}">Cartão ${cartao.nome}</span>
+                            <span class="item-detail">Fatura: ${formatMoney(cartao.valor)}</span>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <input type="date" class="data-pagamento-input" value="${cartao.dataPagto || ''}" onchange="atualizarDataPagtoCartao(${cIdx}, this.value)">
+                        <button class="btn-action delete" onclick="excluirCartaoVitrine(${cIdx})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            return total;
+        }
+
+        function toggleCheck(cat, index) {
+            mesesData[mesAtual][cat][index].pago = !mesesData[mesAtual][cat][index].pago;
+            salvarDados(); renderMenuMes();
+        }
+        function toggleCheckCartaoMenu(cIdx) {
+            let c = mesesData[mesAtual].cartoes[cIdx];
+            c.pago = !c.pago;
+            salvarDados(); renderMenuMes();
+        }
+        function atualizarDataPagto(cat, index, val) {
+            mesesData[mesAtual][cat][index].dataPagto = val;
+            salvarDados();
+        }
+        function atualizarDataPagtoCartao(cIdx, val) {
+            mesesData[mesAtual].cartoes[cIdx].dataPagto = val;
+            salvarDados();
+        }
+
+        function abrirModalAddCartao() {
+            document.getElementById('ncNome').value = '';
+            document.getElementById('ncLimite').value = '';
+            document.getElementById('ncFech').value = '';
+            document.getElementById('ncVenc').value = '';
+            document.getElementById('modalAddCartao').classList.add('open');
+        }
+        function closeModalAddCartao() { document.getElementById('modalAddCartao').classList.remove('open'); }
+
+        function salvarNovoCartao() {
+            const nome = document.getElementById('ncNome').value.trim();
+            const limite = parseFloat(document.getElementById('ncLimite').value);
+            const fech = document.getElementById('ncFech').value.trim() || '01';
+            const venc = document.getElementById('ncVenc').value.trim() || '10';
+
+            if(!nome || isNaN(limite) || limite <= 0) { alert('Preencha o nome e o limite do cartão.'); return; }
+
+            limitesCartoes[nome] = limite;
+            localStorage.setItem('larissa_limites_v12', JSON.stringify(limitesCartoes));
+
+            for(let chave in mesesData) {
+                let existe = mesesData[chave].cartoes.some(c => c.nome.toLowerCase() === nome.toLowerCase());
+                if(!existe) {
+                    mesesData[chave].cartoes.push({ nome, valor: 0.00, fechamento: fech, vencimento: venc, pago: false, dataPagto: "", parcelas: [] });
+                }
+            }
+
+            salvarDados(); closeModalAddCartao(); renderMenuMes();
+        }
+
+        function excluirCartaoVitrine(cIdx) {
+            let nomeCartao = mesesData[mesAtual].cartoes[cIdx].nome;
+            if(confirm(`Deseja remover o cartão ${nomeCartao} de todos os meses?`)) {
+                for(let chave in mesesData) {
+                    mesesData[chave].cartoes = mesesData[chave].cartoes.filter(c => c.nome !== nomeCartao);
+                }
+                salvarDados(); renderMenuMes();
+            }
+        }
+
+        function abrirDetalhesEntradas() {
+            const dados = mesesData[mesAtual];
+            const container = document.getElementById('listEntradasDet');
+            container.innerHTML = '';
+
+            let lista = dados.entradasDetalhadas || [];
+            if(lista.length === 0) {
+                container.innerHTML = `<p style="font-size:0.8rem; color:var(--text-secondary); text-align:center;">Nenhuma entrada cadastrada.</p>`;
+            } else {
+                lista.forEach((ent, idx) => {
+                    container.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px; border-radius:10px; margin-bottom:6px;">
+                            <div><strong>${ent.desc}</strong><br><small>${formatarDataExibicao(ent.data)}</small></div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <strong style="color:var(--success)">+ ${formatMoney(ent.valor)}</strong>
+                                <button class="btn-action delete" onclick="excluirEntrada(${idx})">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('entDesc').value = '';
+            document.getElementById('entValor').value = '';
+            document.getElementById('entData').value = '';
+            document.getElementById('modalEntradas').classList.add('open');
+        }
+        function closeModalEntradas() { document.getElementById('modalEntradas').classList.remove('open'); }
+
+        function adicionarEntrada() {
+            const desc = document.getElementById('entDesc').value.trim();
+            const valor = parseFloat(document.getElementById('entValor').value);
+            const data = document.getElementById('entData').value;
+
+            if(!desc || isNaN(valor) || valor <= 0) { alert('Preencha a descrição e o valor.'); return; }
+
+            if(!mesesData[mesAtual].entradasDetalhadas) mesesData[mesAtual].entradasDetalhadas = [];
+            mesesData[mesAtual].entradasDetalhadas.push({ desc, valor, data });
+            salvarDados(); abrirDetalhesEntradas(); renderMenuMes();
+        }
+
+        function excluirEntrada(idx) {
+            mesesData[mesAtual].entradasDetalhadas.splice(idx, 1);
+            salvarDados(); abrirDetalhesEntradas(); renderMenuMes();
+        }
+
+        function abrirTelaCartao(nomeCartao) {
+            cartaoAtivo = nomeCartao;
+            document.getElementById('tituloCartaoDetalhe').innerText = `Cartão ${cartaoAtivo}`;
+            let dados = mesesData[mesAtual];
+            let cartaoObj = dados.cartoes.find(c => c.nome === cartaoAtivo);
+            let limiteTotal = limitesCartoes[cartaoAtivo] || 0;
+            let usado = cartaoObj ? cartaoObj.valor : 0;
+            let disp = limiteTotal - usado;
+
+            document.getElementById('detalheLimiteTotal').innerText = formatMoney(limiteTotal);
+            document.getElementById('detalheLimiteDisp').innerText = formatMoney(disp);
+            document.getElementById('detalheTotalFatura').innerText = formatMoney(usado);
+            document.getElementById('lblFechamento').innerText = `Dia ${cartaoObj.fechamento || '01'}`;
+            document.getElementById('lblVencimentoFat').innerText = `Dia ${cartaoObj.vencimento || '10'}`;
+
+            const container = document.getElementById('listExtratoCartao');
+            container.innerHTML = '';
+            let parcelas = cartaoObj && cartaoObj.parcelas ? cartaoObj.parcelas : [];
+
+            if(parcelas.length === 0) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-secondary); text-align:center; padding:10px;">Nenhuma compra cadastrada.</div>`;
+            } else {
+                parcelas.forEach((p, pIdx) => {
+                    container.innerHTML += `
+                        <div class="item-row">
+                            <div class="item-text"><span class="item-name">${p.desc}</span><span class="item-detail">Data: ${formatarDataExibicao(p.dataCompra)} • ${p.parcelaAtual}</span></div>
+                            <div class="item-right"><span class="item-price" style="color:var(--danger)">${formatMoney(p.valor)}</span><button class="btn-action delete" onclick="excluirCompraCartao(${pIdx})">🗑️</button></div>
+                        </div>
+                    `;
+                });
+            }
+            mudarPagina('pageCartaoDetalhe');
+        }
+
+        function editarLimiteCartao() {
+            let novo = prompt(`Digite o limite total do Cartão ${cartaoAtivo}:`, limitesCartoes[cartaoAtivo] || 0);
+            if(novo !== null && !isNaN(novo)) {
+                limitesCartoes[cartaoAtivo] = parseFloat(novo);
+                localStorage.setItem('larissa_limites_v12', JSON.stringify(limitesCartoes));
+                abrirTelaCartao(cartaoAtivo);
+            }
+        }
+
+        function editarDatasFatura() {
+            let dados = mesesData[mesAtual];
+            let cObj = dados.cartoes.find(c => c.nome === cartaoAtivo);
+            let feh = prompt("Dia do Fechamento (ex: 20):", cObj.fechamento || "01");
+            let venc = prompt("Dia do Vencimento (ex: 27):", cObj.vencimento || "10");
+            if(feh) cObj.fechamento = feh;
+            if(venc) cObj.vencimento = venc;
+            salvarDados(); abrirTelaCartao(cartaoAtivo); renderMenuMes();
+        }
+
+        function abrirTelaVr() {
+            let dados = mesesData[mesAtual];
+            let gastosVr = dados.vrGastos || [];
+            let totalGasto = gastosVr.reduce((a,b)=>a+b.valor, 0);
+            let disp = dados.vrTotal - totalGasto;
+
+            document.getElementById('vrDetalheTotal').innerText = formatMoney(dados.vrTotal);
+            document.getElementById('vrDetalheDisp').innerText = formatMoney(disp);
+            document.getElementById('vrDetalheGasto').innerText = formatMoney(totalGasto);
+
+            const container = document.getElementById('listExtratoVr');
+            container.innerHTML = '';
+
+            if(gastosVr.length === 0) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-secondary); text-align:center; padding:10px;">Nenhum gasto registrado no VR.</div>`;
+            } else {
+                gastosVr.forEach((g, gIdx) => {
+                    container.innerHTML += `
+                        <div class="item-row">
+                            <div class="item-text"><span class="item-name">${g.nome}</span><span class="item-detail">Vale-Refeição</span></div>
+                            <div class="item-right"><span class="item-price" style="color:var(--danger)">${formatMoney(g.valor)}</span><button class="btn-action delete" onclick="excluirGastoVr(${gIdx})">🗑️</button></div>
+                        </div>
+                    `;
+                });
+            }
+            mudarPagina('pageVrDetalhe');
+        }
+
+        function editarVrTotal() {
+            let novo = prompt("Digite o valor total do VR para este mês:", mesesData[mesAtual].vrTotal);
+            if(novo !== null && !isNaN(novo)) {
+                mesesData[mesAtual].vrTotal = parseFloat(novo);
+                salvarDados(); abrirTelaVr();
+            }
+        }
+
+        function renderInvestimentos() {
+            const container = document.getElementById('listInvestimentos');
+            container.innerHTML = '';
+            let total = 0;
+
+            if(investimentos.length === 0) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:var(--text-secondary); text-align:center; padding:10px;">Nenhum investimento cadastrado.</div>`;
+            } else {
+                investimentos.forEach((inv, iIdx) => {
+                    total += inv.valor;
+                    container.innerHTML += `
+                        <div class="item-row">
+                            <div class="item-text"><span class="item-name">${inv.nome}</span><span class="item-detail">${inv.tipo} • Rend: ${inv.rendimento} • Resgate: ${formatarDataExibicao(inv.resgate)}</span></div>
+                            <div class="item-right"><span class="item-price" style="color:var(--success)">${formatMoney(inv.valor)}</span><button class="btn-action delete" onclick="excluirInvestimento(${iIdx})">🗑️</button></div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('totalInvestido').innerText = formatMoney(total);
+        }
+
+        function abrirModalInvestimento() {
+            document.getElementById('invNome').value = '';
+            document.getElementById('invValor').value = '';
+            document.getElementById('invTipo').value = '';
+            document.getElementById('invRendimento').value = '';
+            document.getElementById('invResgate').value = '';
+            document.getElementById('modalInvestimento').classList.add('open');
+        }
+        function closeModalInvestimento() { document.getElementById('modalInvestimento').classList.remove('open'); }
+
+        function salvarInvestimento() {
+            const nome = document.getElementById('invNome').value.trim();
+            const valor = parseFloat(document.getElementById('invValor').value);
+            const tipo = document.getElementById('invTipo').value.trim();
+            const rendimento = document.getElementById('invRendimento').value.trim();
+            const resgate = document.getElementById('invResgate').value;
+
+            if(!nome || isNaN(valor) || valor <= 0) { alert('Preencha os campos obrigatórios.'); return; }
+
+            investimentos.push({ nome, valor, tipo, rendimento, resgate });
+            localStorage.setItem('larissa_investimentos_v12', JSON.stringify(investimentos));
+            closeModalInvestimento(); renderInvestimentos();
+        }
+
+        function excluirInvestimento(iIdx) {
+            investimentos.splice(iIdx, 1);
+            localStorage.setItem('larissa_investimentos_v12', JSON.stringify(investimentos));
+            renderInvestimentos();
+        }
+
+        function openModalGeral() {
+            document.getElementById('gDesc').value = '';
+            document.getElementById('gValor').value = '';
+            document.getElementById('gVenc').value = '';
+            document.getElementById('blocoValidadeFixo').style.display = 'block';
+            document.getElementById('modalGeral').classList.add('open');
+        }
+        function closeModalGeral() { document.getElementById('modalGeral').classList.remove('open'); }
+        function verificarCatFixo(val) {
+            document.getElementById('blocoValidadeFixo').style.display = val === 'fixos' ? 'block' : 'none';
+        }
+
+        function salvarGastoGeral() {
+            const desc = document.getElementById('gDesc').value.trim();
+            const valor = parseFloat(document.getElementById('gValor').value);
+            const venc = document.getElementById('gVenc').value;
+            const cat = document.getElementById('gCat').value;
+            const fimVal = document.getElementById('gFimFixo').value;
+
+            if(!desc || isNaN(valor) || valor <= 0) { alert('Preencha corretamente.'); return; }
+
+            if(cat === 'fixos') {
+                let chaves = Object.keys(mesesData);
+                let idxInicio = chaves.indexOf(mesAtual);
+
+                chaves.forEach((chave, i) => {
+                    if(i >= idxInicio) {
+                        if(fimVal === 'indefinido' || chave <= fimVal) {
+                            if(!mesesData[chave].fixos) mesesData[chave].fixos = [];
+                            let existe = mesesData[chave].fixos.some(f => f.nome.toLowerCase() === desc.toLowerCase());
+                            if(!existe) {
+                                mesesData[chave].fixos.push({ nome: desc, valor: valor, vencimento: venc, fimValidade: fimVal, pago: false, dataPagto: "" });
+                            }
+                        }
+                    }
+                });
+            } else {
+                if(!mesesData[mesAtual][cat]) mesesData[mesAtual][cat] = [];
+                mesesData[mesAtual][cat].push({ nome: desc, valor: valor, vencimento: venc, pago: false, dataPagto: "" });
+            }
+
+            salvarDados(); closeModalGeral(); renderMenuMes();
+        }
+
+        function abrirEditarGeral(cat, index) {
+            editandoCat = cat; editandoIndex = index;
+            const item = mesesData[mesAtual][cat][index];
+            document.getElementById('eDesc').value = item.nome;
+            document.getElementById('eValor').value = item.valor;
+            document.getElementById('eVenc').value = item.vencimento || '';
+            document.getElementById('modalEditar').classList.add('open');
+        }
+        function closeModalEditar() { document.getElementById('modalEditar').classList.remove('open'); }
+
+        function salvarEdicaoGeral() {
+            const desc = document.getElementById('eDesc').value.trim();
+            const valor = parseFloat(document.getElementById('eValor').value);
+            const venc = document.getElementById('eVenc').value;
+            if(!desc || isNaN(valor) || valor <= 0) return;
+
+            let item = mesesData[mesAtual][editandoCat][editandoIndex];
+            item.nome = desc; item.valor = valor; item.vencimento = venc;
+            salvarDados(); closeModalEditar(); renderMenuMes();
+        }
+
+        function excluirGeral(cat, index) {
+            let item = mesesData[mesAtual][cat][index];
+            if(confirm(`Deseja excluir "${item.nome}"?`)) {
+                mesesData[mesAtual][cat].splice(index, 1);
+                salvarDados(); renderMenuMes();
+            }
+        }
+
+        function abrirModalCompraCartao() {
+            document.getElementById('cDesc').value = '';
+            document.getElementById('cValor').value = '';
+            document.getElementById('cData').value = '';
+            setCartaoParcelado(false);
+            document.getElementById('modalCartao').classList.add('open');
+        }
+        function closeModalCartao() { document.getElementById('modalCartao').classList.remove('open'); }
+
+        function setCartaoParcelado(status) {
+            cartaoParceladoFlag = status;
+            document.getElementById('cOptNao').className = `radio-card ${!status ? 'selected' : ''}`;
+            document.getElementById('cOptSim').className = `radio-card ${status ? 'selected' : ''}`;
+            document.getElementById('cBlocoParcelas').style.display = status ? 'block' : 'none';
+        }
+
+        // AUTOMAÇÃO INTELIGENTE DE FECHAMENTO DE FATURA (EX: FECHA DIA 20 -> COMPRA DIA 21 VAI PRA PRÓXIMA FATURA)
+        function salvarCompraCartaoModal() {
+            const desc = document.getElementById('cDesc').value.trim();
+            const valorTotal = parseFloat(document.getElementById('cValor').value);
+            const dataCompra = document.getElementById('cData').value;
+            if(!desc || isNaN(valorTotal) || valorTotal <= 0 || !dataCompra) { alert('Preencha todos os campos e a data.'); return; }
+
+            let dados = mesesData[mesAtual];
+            let cObj = dados.cartoes.find(c => c.nome === cartaoAtivo);
+            let diaFechamento = parseInt(cObj.fechamento || "1");
+
+            let [anoC, mesC, diaC] = dataCompra.split('-').map(Number);
+            let mesAlvoKey = mesAtual;
+
+            // Se o dia da compra for IGUAL ou SUPERIOR ao dia de fechamento, pula para o mês seguinte
+            if(diaC >= diaFechamento) {
+                let chaves = Object.keys(mesesData);
+                let idx = chaves.indexOf(mesAtual);
+                if(idx !== -1 && chaves[idx + 1]) {
+                    mesAlvoKey = chaves[idx + 1];
+                }
+            }
+
+            let chavesMeses = Object.keys(mesesData);
+            let idxInicio = chavesMeses.indexOf(mesAlvoKey);
+
+            if(cartaoParceladoFlag) {
+                const qtd = parseInt(document.getElementById('cParcelas').value);
+                const valParc = valorTotal / qtd;
+                for(let i = 0; i < qtd; i++) {
+                    let targetMes = chavesMeses[idxInicio + i];
+                    if(!targetMes) break;
+                    let targetCartao = mesesData[targetMes].cartoes.find(c => c.nome === cartaoAtivo);
+                    if(targetCartao) {
+                        targetCartao.valor += valParc;
+                        if(!targetCartao.parcelas) targetCartao.parcelas = [];
+                        targetCartao.parcelas.push({ desc: desc, valor: valParc, dataCompra: dataCompra, parcelaAtual: `${i+1}/${qtd}` });
+                    }
+                }
+            } else {
+                let targetCartao = mesesData[mesAlvoKey].cartoes.find(c => c.nome === cartaoAtivo);
+                if(targetCartao) {
+                    targetCartao.valor += valorTotal;
+                    if(!targetCartao.parcelas) targetCartao.parcelas = [];
+                    targetCartao.parcelas.push({ desc: desc, valor: valorTotal, dataCompra: dataCompra, parcelaAtual: 'À vista' });
+                }
+            }
+
+            salvarDados(); closeModalCartao(); abrirTelaCartao(cartaoAtivo);
+        }
+
+        function excluirCompraCartao(pIdx) {
+            let dados = mesesData[mesAtual];
+            let cObj = dados.cartoes.find(c => c.nome === cartaoAtivo);
+            if(cObj && cObj.parcelas) {
+                let parc = cObj.parcelas[pIdx];
+                cObj.valor -= parc.valor;
+                cObj.parcelas.splice(pIdx, 1);
+                salvarDados(); abrirTelaCartao(cartaoAtivo);
+            }
+        }
+
+        function abrirModalGastoVr() {
+            document.getElementById('vrDesc').value = '';
+            document.getElementById('vrValor').value = '';
+            document.getElementById('modalVr').classList.add('open');
+        }
+        function closeModalVr() { document.getElementById('modalVr').classList.remove('open'); }
+
+        function salvarGastoVrModal() {
+            const desc = document.getElementById('vrDesc').value.trim();
+            const valor = parseFloat(document.getElementById('vrValor').value);
+            if(!desc || isNaN(valor) || valor <= 0) { alert('Preencha os campos.'); return; }
+
+            if(!mesesData[mesAtual].vrGastos) mesesData[mesAtual].vrGastos = [];
+            mesesData[mesAtual].vrGastos.push({ nome: desc, valor: valor });
+            salvarDados(); closeModalVr(); abrirTelaVr();
+        }
+
+        function excluirGastoVr(gIdx) {
+            if(confirm("Deseja remover este gasto do VR?")) {
+                mesesData[mesAtual].vrGastos.splice(gIdx, 1);
+                salvarDados(); abrirTelaVr();
+            }
+        }
+
+        function formatarDataExibicao(dataStr) {
+            if(!dataStr || !dataStr.includes('-')) return dataStr || 'A definir';
+            let [ano, mes, dia] = dataStr.split('-');
+            return `${dia}/${mes}`;
+        }
+
+        function baixarPdfMes() { window.print(); }
+
+        function salvarDados() { localStorage.setItem('larissa_dados_v12', JSON.stringify(mesesData)); }
+        function formatMoney(val) { return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+        init();
+    </script>
+</body>
+</html>
